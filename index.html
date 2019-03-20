@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <title>Aseman junatiedot</title>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #5B9C12;">
+      <a class="navbar-brand" href="#">Aseman junatiedot</a>
+    </nav>
+
+    <div class="form-group col-md-4">
+      <label for="stationDropdown"><b>Hae aseman nimellä</b></label>
+      <select id="stationDropdown" class="form-control">
+      </select>
+    </div>
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="saapuvat-tab" data-toggle="tab" href="#saapuvat" role="tab" aria-controls="saapuvat" aria-selected="true">Saapuvat</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="lahtevat-tab" data-toggle="tab" href="#lahtevat" role="tab" aria-controls="lahtevat" aria-selected="false">Lähtevät</a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="saapuvat" role="tabpanel" aria-labelledby="saapuvat-tab">
+        <table id="saapuvatTaulu">
+          <thead>
+            <tr>
+            <th>Juna</th>
+            <th>Lähtöasema</th>
+            <th>Pääteasema</th>
+            <th>Saapuu</th>
+          </tr>
+          </thead>
+          <tbody>
+
+            </tbody>
+        </table>
+
+      </div>
+      <div class="tab-pane" id="lahtevat" role="tabpanel" aria-labelledby="lahtevat-tab">
+        <table>
+          <tr>
+            <th>Juna</th>
+            <th>Lähtöasema</th>
+            <th>Pääteasema</th>
+            <th>Lähtee</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div> <!-- container end -->
+
+  <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script>
+    var api = "https://rata.digitraffic.fi/api/v1/metadata/stations";
+    $.getJSON(api, function(data) {
+      var array=[];
+      for (a in data) {
+        array.push([a, data[a]])
+      };
+      listItems = "<option selected>Valitse</option>";
+      $.each(array, function(i, item) {
+        listItems += "<option value='" + item[1].stationShortCode + "'>" + item[1].stationName + "</option>";
+      });
+      $("#stationDropdown").html(listItems);
+    });
+
+
+    $(function () {
+      $('#myTab li:first-child a').tab('show')
+    });
+
+
+    $("#stationDropdown").change(function() {
+      $("#saapuvatTaulu tbody").empty();
+
+      var stationShort = $(this).children(":selected").attr("value");
+      console.log(stationShort);
+      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?arriving_trains=10&"
+      $.getJSON(url, function(data) {
+        var array = [];
+        for (a in data) {
+          array.push([a, data[a]]);
+        };
+        //console.log(array);
+        listItems = "";
+        listRows = [];
+        $.each(array, function(i, item) {
+          listItems += "<tr><td>" + item[1].trainType + " " + item[1].trainNumber + "</td>";
+          listItem = [];
+          listItem.push(item[1].trainType);
+          listItem.push(item[1].trainNumber);
+          $.each(item, function(n, item2) {
+            console.log(item2.timeTableRows);
+            var timetable = item2.timeTableRows;
+
+            $.each(timetable, function(r, item3) {
+              //console.log(item3.stationShortCode);
+              if (r == 0) {
+                console.log("eka");
+                listItems += "<td>" + item3.stationShortCode + "</td>";
+                listItem.push(item3.stationShortCode);
+              };
+              if (item3.stationShortCode == stationShort) {
+                console.log("bingo");
+                tempString = "";
+                tempString += "<td>" + item3.scheduledTime+ "</td>"
+                listItem.push(item3.scheduledTime);
+                r++;
+              };
+              if (r == (timetable.length - 1)) {
+                console.log("vika");
+                //console.log(stationShort);
+                listItems += "<td>" + item3.stationShortCode + "</td>" + tempString;
+                listItem.push(item3.stationShortCode);
+              };
+              //listStops.push([r, item3[r]]);
+            });
+            //console.log(listStops);
+          });
+          listItems += "<td></td></tr>"
+          console.log(listItem);
+        });
+        //console.log(listItems);
+        $("#saapuvatTaulu tbody").append(listItems);
+      });
+
+      // $("#saapuvatTaulu tbody").empty();
+      // $("#saapuvatTaulu tbody").append(table);
+    });
+    // $(document).ready(function(){
+    //   var listItems= "";
+    //   $.each(jsonList, function(i, item) {
+    //     //listItems+= "<option value='" + i + "'>" + jsonList[i].stationName + "</option>";
+    //     console.log(jsonList[i].stationName)
+    //   });
+    //   console.log(listItems);
+    //   $("#inputState").html(listItems);
+    // });
+  </script>
+</body>
+</html>
