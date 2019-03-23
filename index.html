@@ -90,7 +90,7 @@
 
       var stationShort = $(this).children(":selected").attr("value");
       console.log(stationShort);
-      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?arriving_trains=10&"
+      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort
       $.getJSON(url, function(data) {
         var array = [];
         for (a in data) {
@@ -99,13 +99,14 @@
         //console.log(array);
         listItems = "";
         listRows = [];
+        listItem2 = [];
         $.each(array, function(i, item) {
           listItems += "<tr><td>" + item[1].trainType + " " + item[1].trainNumber + "</td>";
           listItem = [];
           listItem.push(item[1].trainType);
           listItem.push(item[1].trainNumber);
           $.each(item, function(n, item2) {
-            console.log(item2.timeTableRows);
+            //console.log(item2.timeTableRows);
             var timetable = item2.timeTableRows;
 
             $.each(timetable, function(r, item3) {
@@ -120,7 +121,7 @@
                 tempString = "";
                 tempString += "<td>" + item3.scheduledTime+ "</td>"
                 listItem.push(item3.scheduledTime);
-                r++;
+
               };
               if (r == (timetable.length - 1)) {
                 console.log("vika");
@@ -134,7 +135,12 @@
           });
           listItems += "<td></td></tr>"
           console.log(listItem);
+          listItem2.push(listItem);
+
         });
+        console.log(listItem2);
+        console.log("ois pitäny printtaa");
+
         //console.log(listItems);
         $("#saapuvatTaulu tbody").append(listItems);
       });
