@@ -103,6 +103,8 @@
         $.each(array, function(i, item) {
           listItems += "<tr><td>" + item[1].trainType + " " + item[1].trainNumber + "</td>";
           listItem = [];
+          time = [];
+
           listItem.push(item[1].trainType);
           listItem.push(item[1].trainNumber);
           $.each(item, function(n, item2) {
@@ -116,19 +118,30 @@
                 listItems += "<td>" + item3.stationShortCode + "</td>";
                 listItem.push(item3.stationShortCode);
               };
+
+              
               if (item3.stationShortCode == stationShort) {
                 console.log("bingo");
                 tempString = "";
                 tempString += "<td>" + item3.scheduledTime+ "</td>"
-                listItem.push(item3.scheduledTime);
+                //listItem.push(item3.scheduledTime);
+                var timestamp = new Date(item3.scheduledTime).getTime()
+                var date = new Date(timestamp);
+                var newdate = date.getHours() + ":" + date.getMinutes();
+                //time.push(item3.scheduledTime);
+                time.push(newdate);
+
+
 
               };
               if (r == (timetable.length - 1)) {
                 console.log("vika");
                 //console.log(stationShort);
                 listItems += "<td>" + item3.stationShortCode + "</td>" + tempString;
+                listItem.push(time);
                 listItem.push(item3.stationShortCode);
               };
+
               //listStops.push([r, item3[r]]);
             });
             //console.log(listStops);
