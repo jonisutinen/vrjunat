@@ -106,8 +106,8 @@
 
       var stationShort = $(this).children(":selected").attr("value");
       // console.log(stationShort);
-      //url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?minutes_before_departure=600&minutes_after_departure=0&minutes_before_arrival=600&minutes_after_arrival=0"
-      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?arriving_trains=10"
+      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?minutes_before_departure=60&minutes_after_departure=0&minutes_before_arrival=60&minutes_after_arrival=0"
+      //url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?arriving_trains=10"
       $.getJSON(url, function(data) {
         var array = [];
         for (a in data) {
@@ -154,6 +154,7 @@
                   var timestampS = new Date(item3.scheduledTime).getTime()
                   var dateS = new Date(timestampS);
 
+
                   if (dateS.getHours() < 10) {
                     var hours = "0" + dateS.getHours();
                   } else {
@@ -168,14 +169,44 @@
 
                   var newdateS = hours + ":" + minutes;
 
+                  var difference = item3.differenceInMinutes;
+                  console.log(difference);
+
+                  if (difference > 0) {
+                    var timestampB = new Date(item3.liveEstimateTime).getTime()
+                    if (timestampB == NaN) {
+                      new Date(item3.actualTime).getTime();
+                    }
+                    var dateB = new Date(timestampB);
+
+                    if (dateB.getHours() < 10) {
+                      var hours = "0" + dateB.getHours();
+                    } else {
+                      var hours = dateB.getHours();
+                    }
+
+                    if (dateB.getMinutes() < 10) {
+                      var minutes = "0" + dateB.getMinutes();
+                    } else {
+                      var minutes = dateB.getMinutes();
+                    }
+
+                    var newdateB = hours + ":" + minutes;
+                  } else {
+                    var newdateB = "";
+                  }
+
+
                   var timestampA = new Date(item3.scheduledTime).getTime()
                   var dateA = new Date(timestampA);
+
 
 
                   var newdateA = dateA.getHours() + ":" + dateA.getMinutes();
                   var newdt = dateA.getDate() + "." + dateA.getMonth();
                   //time.push(item3.scheduledTime);
                   timeS.push(newdateS);
+                  timeS.push(newdateB);
                   timeS.push(newdt);
 
 
@@ -224,12 +255,14 @@
         $.each(listItem2, function(r, item) {
           // console.log(r);
           // console.log(listItem2);
-          try {
-            if (item[3][1] != curdt) {
+           try {
+            if (item[3][2] != curdt) {
+              console.log("ahaa");
               // console.log("ahaaa");
               // console.log("b: " + listItem2[r]);
               //var remove = item[3][1];
-              listItem2.splice($.inArray(listItem2[r], listItem2),1);
+              //listItem2.splice()
+              listItem2.splice(r, 1);
               // console.log("a: " + listItem2[r]);
               // console.log(r);
               // //r--;
@@ -239,9 +272,11 @@
 
 
           }
-          catch(err) {
+          catch(TypeError) {
+            console.log(item);
             return;
           }
+
         });
 
 
@@ -249,10 +284,11 @@
 
         function compare(a,b) {
           if (a[3][0] < b[3][0])
-          return -1;
+            return -1;
           if (a[3][0] > b[3][0])
-          return 1;
+            return 1;
           return 0;
+          //return a[3][0] - b[3][0] || a[3][2] - b[3][2] ;
         }
 
         listItem2.sort(compare);
@@ -274,8 +310,12 @@
                   table += "<td>" + o[0] + "</td>";
                   table += "<td>" + dict[o[1]] + "</td>";
                   table += "<td>" + dict[o[2]] + "</td>";
-                  table += "<td>" + o[3][0] + "</td>";
-                  table += "</tr>";
+                  if (o[3][1] != "") {
+                    table += "<td>" + "<span style=color:red>" + o[3][1] + "</span> (" + o[3][0] + ")";
+                  } else {
+                    table += "<td>" + o[3][0];
+                  }
+                  table += "  " + o[3][2] + "</td></tr>";
                 }
 
               });
