@@ -14,13 +14,13 @@
 <body>
   <div>
 
-  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #5B9C12;">
-    <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #5B9C12;">
+      <div class="container">
 
-    <a class="navbar-brand" href="#">Aseman junatiedot</a>
+        <a class="navbar-brand" href="#">Aseman junatiedot</a>
+      </div>
+    </nav>
   </div>
-  </nav>
-</div>
   <div class="container">
 
     <div class="form-group col-md-4 dropdown">
@@ -81,13 +81,15 @@
 
   </div> <!-- container end -->
 
-  <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
   <script>
     var stations = "https://rata.digitraffic.fi/api/v1/metadata/stations";
 
+
+    // asema dropdown
     $.getJSON(stations, function(data) {
       var array = [];
       for (a in data) {
@@ -102,10 +104,12 @@
       $("#stationDropdown").html(listItems);
     });
 
+    // tabit
     $(function () {
       $('#myTab li:first-child a').tab('show')
     });
 
+    //taulukot dropdownin valinnan mukaan
     $("#stationDropdown").change(function() {
       $("#saapuvatTaulu tbody").empty();
       $("#lahtevatTaulu tbody").empty();
@@ -142,8 +146,6 @@
                 listItem.push(item3.stationShortCode);
               };
 
-
-
               if (item3.stationShortCode == stationShort) {
 
 
@@ -151,8 +153,6 @@
                   var timestampS = new Date(item3.scheduledTime).getTime()
                   var dateS = new Date(timestampS);
 
-                  console.log("item3: " + item3);
-                  console.log("item3diff: " + item3.differenceInMinutes);
 
                   if (dateS.getHours() < 10) {
                     var hours = "0" + dateS.getHours();
@@ -301,6 +301,10 @@
           }
         });
 
+
+        // vertailut
+
+
         function compareA(a,b) {
           if (a[3][1][0] < b[3][1][0])
           return -1;
@@ -317,6 +321,8 @@
           return 0;
         }
 
+        // taulukon luonti
+        
         function create_table() {
           $.getJSON("https://rata.digitraffic.fi/api/v1/metadata/stations", function(data){
             var dict = {};
@@ -389,14 +395,13 @@
                               });
                             }
                             create_table();
-                            console.log(url);
 
                           });
 
 
                         });
 
-                        // });
-                      </script>
-                    </body>
-                    </html>
+
+                    </script>
+                  </body>
+                  </html>
