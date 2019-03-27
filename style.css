@@ -1,0 +1,26 @@
+.nav-item a {
+  color: green;
+}
+
+th {
+  color: grey;
+  font-weight: normal;
+
+}
+
+td {
+  font-size: 18px;
+}
+
+tr {
+  height: 50px;
+}
+
+.dropdown {
+  padding: 50px 0 50px 0;
+}
+
+p {
+  padding: 0px;
+  font-size: 14px;
+}
