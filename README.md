@@ -1,3 +1,3 @@
 # vrjunat
 
-KESKENERÄINEN!
+https://jonisutinen.fi/vrjunat
