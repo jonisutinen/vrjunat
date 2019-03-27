@@ -7,16 +7,15 @@
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+  <link rel="stylesheet" href="style.css" type="text/css" />
   <title>Aseman junatiedot</title>
 </head>
 <body>
-  <div class="container">
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #5B9C12;">
-      <a class="navbar-brand" href="#">Aseman junatiedot</a>
+      <a class="navbar-brand container" href="#">Aseman junatiedot</a>
     </nav>
-
-    <div class="form-group col-md-4">
+    <div class="container">
+    <div class="form-group col-md-4 dropdown">
       <label for="stationDropdown"><b>Hae aseman nimellä</b></label>
       <select id="stationDropdown" class="form-control">
       </select>
@@ -33,7 +32,11 @@
 
     <div class="tab-content">
       <div class="tab-pane active" id="saapuvat" role="tabpanel" aria-labelledby="saapuvat-tab">
-        <table id="saapuvatTaulu">
+        <table id="saapuvatTaulu" class="table table-striped">
+          <col width="200">
+          <col width="200">
+          <col width="200">
+          <col width="200">
           <thead>
             <tr>
               <th>Juna</th>
@@ -49,13 +52,21 @@
 
       </div>
       <div class="tab-pane" id="lahtevat" role="tabpanel" aria-labelledby="lahtevat-tab">
-        <table>
-          <tr>
-            <th>Juna</th>
-            <th>Lähtöasema</th>
-            <th>Pääteasema</th>
-            <th>Lähtee</th>
-          </tr>
+        <table id="lahtevatTaulu" class="table table-striped">
+          <col width="200">
+          <col width="200">
+          <col width="200">
+          <col width="200">
+          <thead>
+            <tr>
+              <th >Juna</th>
+              <th>Lähtöasema</th>
+              <th>Pääteasema</th>
+              <th>Lähtee</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
         </table>
       </div>
     </div>
@@ -65,26 +76,16 @@
   <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
   <script>
-    // var api = "https://rata.digitraffic.fi/api/v1/metadata/stations";
-    // $.getJSON(api, function(data) {
-    //   var array=[];
-    //   for (a in data) {
-    //     array.push([a, data[a]])
-    //   };
-    //   listItems = "<option selected>Valitse</option>";
-    //   $.each(array, function(i, item) {
-    //     listItems += "<option value='" + item[1].stationShortCode + "'>" + item[1].stationName + "</option>";
-    //   });
-    //   $("#stationDropdown").html(listItems);
-    // });
 
     var stations = "https://rata.digitraffic.fi/api/v1/metadata/stations";
     $.getJSON(stations, function(data) {
       var array = [];
       for (a in data) {
         if (data[a].passengerTraffic == true) {
-          array.push([data[a].stationShortCode, data[a].stationName]);
+          array.push([data[a].stationShortCode, data[a].stationName.replace(" asema","")]);
         }
       }
       listItems = "<option selected>Valitse</option>";
@@ -94,66 +95,57 @@
       $("#stationDropdown").html(listItems);
     });
 
-
-
     $(function () {
       $('#myTab li:first-child a').tab('show')
     });
 
-
     $("#stationDropdown").change(function() {
       $("#saapuvatTaulu tbody").empty();
+      $("#lahtevatTaulu tbody").empty();
 
       var stationShort = $(this).children(":selected").attr("value");
-      // console.log(stationShort);
-      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?minutes_before_departure=60&minutes_after_departure=0&minutes_before_arrival=60&minutes_after_arrival=0"
-      //url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?arriving_trains=10"
+      //url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?minutes_before_departure=1440&minutes_after_departure=0&minutes_before_arrival=1440&minutes_after_arrival=0"
+      url = "https://rata.digitraffic.fi/api/v1/live-trains/station/" + stationShort + "?departing_trains=15&arriving_trains=15"
       $.getJSON(url, function(data) {
         var array = [];
         for (a in data) {
           array.push([a, data[a]]);
         };
-        //console.log(array);
         listItems = "";
         listRows = [];
         listItem2 = [];
         $.each(array, function(i, item) {
-          //listItems += "<tr><td>" + item[1].trainType + " " + item[1].trainNumber + "</td>";
           listItem = [];
           timeS = [];
-          //timeA = [];
+          timeA = [];
           if (item[1].trainCategory == "Commuter") {
             listItem.push("Commuter train " + item[1].commuterLineID);
           } else {
             listItem.push(item[1].trainType + " " + item[1].trainNumber);
           }
+
           $.each(item, function(n, item2) {
-            //console.log(item2.timeTableRows);
             var timetable = item2.timeTableRows;
             var type = [];
 
             $.each(timetable, function(r, item3) {
-              //console.log(item3.stationShortCode);
 
               if (r == 0) {
-                // console.log("eka");
 
-                //listItems += "<td>" + item3.stationShortCode + "</td>";
                 listItem.push(item3.stationShortCode);
               };
 
 
+
               if (item3.stationShortCode == stationShort) {
 
-                type.push(item3.type);
-                // console.log("bingo");
-                //tempString = "";
-                //tempString += "<td style=color:red;>" + item3.scheduledTime+ "</td>"
-                //listItem.push(item3.scheduledTime);
-                if (item3.type == "ARRIVAL") {
+
+                if (item3.type == "DEPARTURE") {
                   var timestampS = new Date(item3.scheduledTime).getTime()
                   var dateS = new Date(timestampS);
 
+                  console.log("item3: " + item3);
+                  console.log("item3diff: " + item3.differenceInMinutes);
 
                   if (dateS.getHours() < 10) {
                     var hours = "0" + dateS.getHours();
@@ -170,12 +162,16 @@
                   var newdateS = hours + ":" + minutes;
 
                   var difference = item3.differenceInMinutes;
-                  console.log(difference);
+
+                  //console.log("diff: " + difference);
 
                   if (difference > 0) {
                     var timestampB = new Date(item3.liveEstimateTime).getTime()
-                    if (timestampB == NaN) {
-                      new Date(item3.actualTime).getTime();
+                    if (isNaN(timestampB)) {
+                      timestampB = new Date(item3.actualTime).getTime();
+                      //console.log(timestampB);
+                      //console.log("ifnan");
+
                     }
                     var dateB = new Date(timestampB);
 
@@ -196,36 +192,92 @@
                     var newdateB = "";
                   }
 
+                  var timestampA = new Date(item3.scheduledTime).getTime()
+                  var dateA = new Date(timestampA);
+
+                  var newdateA = dateA.getHours() + ":" + dateA.getMinutes();
+                  var newdt = dateA.getDate() + "." + dateA.getMonth();
+
+                  timeS.push(newdateS);
+                  timeS.push(newdateB);
+                  timeS.push(newdt);
+                  timeS.push(item3.type);
+                }
+
+                if (item3.type == "ARRIVAL") {
+                  var timestampS = new Date(item3.scheduledTime).getTime()
+                  var dateS = new Date(timestampS);
+
+                  if (dateS.getHours() < 10) {
+                    var hours = "0" + dateS.getHours();
+                  } else {
+                    var hours = dateS.getHours();
+                  }
+
+                  if (dateS.getMinutes() < 10) {
+                    var minutes = "0" + dateS.getMinutes();
+                  } else {
+                    var minutes = dateS.getMinutes();
+                  }
+
+                  var newdateS = hours + ":" + minutes;
+
+                  var difference = item3.differenceInMinutes;
+                  //console.log(item3);
+                  //console.log("diff2: " + difference);
+
+                  if (difference > 0) {
+                    var timestampB = new Date(item3.liveEstimateTime).getTime()
+                    if (isNaN(timestampB)) {
+                      timestampB = new Date(item3.actualTime).getTime();
+                      //console.log(timestampB);
+                      //console.log("ifnan");
+
+                    }
+                    var dateB = new Date(timestampB);
+
+                    if (dateB.getHours() < 10) {
+                      var hours = "0" + dateB.getHours();
+                    } else {
+                      var hours = dateB.getHours();
+                    }
+
+                    if (dateB.getMinutes() < 10) {
+                      var minutes = "0" + dateB.getMinutes();
+                    } else {
+                      var minutes = dateB.getMinutes();
+                    }
+
+                    var newdateB = hours + ":" + minutes;
+                  } else {
+                    var newdateB = "";
+                  }
 
                   var timestampA = new Date(item3.scheduledTime).getTime()
                   var dateA = new Date(timestampA);
 
-
-
                   var newdateA = dateA.getHours() + ":" + dateA.getMinutes();
                   var newdt = dateA.getDate() + "." + dateA.getMonth();
-                  //time.push(item3.scheduledTime);
-                  timeS.push(newdateS);
-                  timeS.push(newdateB);
-                  timeS.push(newdt);
 
 
-
+                  timeA.push(newdateS);
+                  timeA.push(newdateB);
+                  timeA.push(newdt);
+                  timeA.push(item3.type);
                 }
-
-
-                //timeA.push(newdateA);
-                //timeA.push(newdt);
-
-
-
               };
+
+
+
               if (r == (timetable.length - 1)) {
                 // console.log("vika");
                 //console.log(stationShort);
                 //listItems += "<td>" + item3.stationShortCode + "</td>";
                 listItem.push(item3.stationShortCode);
-                listItem.push(timeS);
+                var timelist = [];
+                timelist.push(timeS);
+                timelist.push(timeA);
+                listItem.push(timelist);
                 //listItem.push(timeA);
                 listItem.push(item2.trainCategory);
                 listItem.push(item2.commuterLineID);
@@ -251,18 +303,23 @@
 
         var date = new Date();
         var curdt = date.getDate() + "." + date.getMonth();
-
+        var curtime = date.getHours() + ":" + date.getMinutes();
+        var uusilista2 = [];
         $.each(listItem2, function(r, item) {
+          var uusilista = [];
           // console.log(r);
           // console.log(listItem2);
-           try {
-            if (item[3][2] != curdt) {
+
+
+            if ((item[3][0][2] == curdt || item[3][1][2] == curdt) && (item[3][0][0] != undefined || item[3][1][0] != undefined) && (item[3][0][0] > curtime || item[3][1][0] > curtime)) {
               console.log("ahaa");
+              console.log(item);
+              uusilista2.push(item);
               // console.log("ahaaa");
               // console.log("b: " + listItem2[r]);
               //var remove = item[3][1];
               //listItem2.splice()
-              listItem2.splice(r, 1);
+              //listItem2.splice(r, 1);
               // console.log("a: " + listItem2[r]);
               // console.log(r);
               // //r--;
@@ -271,95 +328,143 @@
             }
 
 
-          }
-          catch(TypeError) {
-            console.log(item);
-            return;
-          }
-
         });
 
+        console.log(uusilista2);
 
 
 
-        function compare(a,b) {
-          if (a[3][0] < b[3][0])
-            return -1;
-          if (a[3][0] > b[3][0])
-            return 1;
+        function compareA(a,b) {
+          if (a[3][1][0] < b[3][1][0])
+          return -1;
+          if (a[3][1][0] > b[3][1][0])
+          return 1;
           return 0;
-          //return a[3][0] - b[3][0] || a[3][2] - b[3][2] ;
         }
 
-        listItem2.sort(compare);
+        function compareD(a,b) {
+          if (a[3][0][0] < b[3][0][0])
+            return -1;
+          if (a[3][0][0] > b[3][0][0])
+            return 1;
+          return 0;
+        }
+
+        // var listaA = uusilista2.sort(compareA);
+        // var listaD = uusilista2.sort(compareD);
+        // console.log(listaA);
+        // console.log(listaD);
 
         function create_table() {
           $.getJSON("https://rata.digitraffic.fi/api/v1/metadata/stations", function(data){
             var dict = {};
             for (a in data) {
               //array.push([data[a].stationShortCode, data[a].stationName]);
-              dict[data[a].stationShortCode] = data[a].stationName;
+              dict[data[a].stationShortCode] = data[a].stationName.replace(" asema","");
 
             }
+            var listaD = uusilista2.sort(compareD);
             //console.log(dict);
-            var table = "";
-            $.each(listItem2, function(m, o) {
-
+            var tableLahtevat = "";
+            $.each(listaD, function(m, o) {
               if (o[4] == "Long-distance" || o[4] == "Commuter") {
-                table += "<tr>";
-                  table += "<td>" + o[0] + "</td>";
-                  table += "<td>" + dict[o[1]] + "</td>";
-                  table += "<td>" + dict[o[2]] + "</td>";
-                  if (o[3][1] != "") {
-                    table += "<td>" + "<span style=color:red>" + o[3][1] + "</span> (" + o[3][0] + ")";
-                  } else {
-                    table += "<td>" + o[3][0];
-                  }
-                  table += "  " + o[3][2] + "</td></tr>";
+                if (o[3][0][3] != "DEPARTURE") {
+                  return true;
                 }
+                tableLahtevat += "<tr>";
+                tableLahtevat += "<td>" + o[0] + "</td>";
+                tableLahtevat += "<td>" + dict[o[1]] + "</td>";
+                tableLahtevat += "<td>" + dict[o[2]] + "</td>";
+                if (o[3][0][3] == "DEPARTURE") {
+                  if (o[3][0][1] > o[3][0][0]) {
+                    tableLahtevat += "<td>" + "<span style=color:red>" + o[3][0][1] + "</span><br /><p style=font-size: 8px;>(" + o[3][0][0] + ")</span>";
+                  } else {
+                    tableLahtevat += "<td>" + o[3][0][0];
+                  }
+                }
+                if (o[3][1][3] == "DEPARTURE") {
+                  if (o[3][1][1] > o[3][1][0]) {
+                    tableLahtevat += "<td>" + "<span style=color:red>" + o[3][1][1] + "</span><br /><p style=font-size: 8px;>(" + o[3][1][0] + ")</span>";
+                  } else {
+                    tableLahtevat += "<td>" + o[3][1][0];
+                  }
+                }
+                tableLahtevat += "</td></tr>";
+              }
 
-              });
-
-              $("#saapuvatTaulu tbody").append(table);
-
-              //console.log("station: " + station);
-              // $.each(array, function(i, item) {
-              //   if (station == array[i][0]) {
-              //     //onsole.log(station + array[i][0])
-              //     console.log("score");
-              //     return array[i][1];
-              //
-              //   }
-              //   else {
-              //     //console.log(station + array[i][0])
-              //
-              //     //console.log("not so score");
-              //   }
-              // });
             });
-          }
-          create_table();
 
-          // var station = "KUO";
-          // var testi = get_station(station);
-          // console.log("testi: " + testi);
+            var listaA = uusilista2.sort(compareA);
+            var tableSaapuvat = "";
+            $.each(listaA, function(m, o) {
+              if (o[4] == "Long-distance" || o[4] == "Commuter") {
+                if (o[3][1][3] != "ARRIVAL") {
+                  return true;
+                }
+                tableSaapuvat += "<tr>";
+                tableSaapuvat += "<td>" + o[0] + "</td>";
+                tableSaapuvat += "<td>" + dict[o[1]] + "</td>";
+                tableSaapuvat += "<td>" + dict[o[2]] + "</td>";
+                if (o[3][0][3] == "ARRIVAL") {
+                  if (o[3][0][1] > o[3][0][0]) {
+                    tableSaapuvat += "<td>" + "<span style=color:red>" + o[3][0][1] + "</span><br /><p style=font-size: 8px;>(" + o[3][0][0] + ")</span>";
+                  } else {
+                    tableSaapuvat += "<td>" + o[3][0][0];
+                  }
+                } else {
+                  if (o[3][1][1] > o[3][1][0]) {
+                    tableSaapuvat += "<td>" + "<span style=color:red>" + o[3][1][1] + "</span><br /><p style=font-size: 8px;>(" + o[3][1][0] + ")</span>";
+                  } else {
+                    tableSaapuvat += "<td>" + o[3][1][0];
+                  }
+                }
+                  tableSaapuvat += "</td></tr>";
+              }
+
+            });
+
+            $("#lahtevatTaulu tbody").append(tableLahtevat);
+            $("#saapuvatTaulu tbody").append(tableSaapuvat);
+
+                  //console.log("station: " + station);
+                  // $.each(array, function(i, item) {
+                  //   if (station == array[i][0]) {
+                  //     //onsole.log(station + array[i][0])
+                  //     console.log("score");
+                  //     return array[i][1];
+                  //
+                  //   }
+                  //   else {
+                  //     //console.log(station + array[i][0])
+                  //
+                  //     //console.log("not so score");
+                  //   }
+                  // });
+                });
+              }
+              create_table();
+              console.log(url);
+
+              // var station = "KUO";
+              // var testi = get_station(station);
+              // console.log("testi: " + testi);
 
 
-          //console.log(listItems);
-        });
+              //console.log(listItems);
+            });
 
-        // $("#saapuvatTaulu tbody").empty();
-        // $("#saapuvatTaulu tbody").append(table);
-      });
-      // $(document).ready(function(){
-      //   var listItems= "";
-      //   $.each(jsonList, function(i, item) {
-      //     //listItems+= "<option value='" + i + "'>" + jsonList[i].stationName + "</option>";
-      //     console.log(jsonList[i].stationName)
-      //   });
-      //   console.log(listItems);
-      //   $("#inputState").html(listItems);
-      // });
-    </script>
-  </body>
-  </html>
+            // $("#saapuvatTaulu tbody").empty();
+            // $("#saapuvatTaulu tbody").append(table);
+          });
+          // $(document).ready(function(){
+          //   var listItems= "";
+          //   $.each(jsonList, function(i, item) {
+          //     //listItems+= "<option value='" + i + "'>" + jsonList[i].stationName + "</option>";
+          //     console.log(jsonList[i].stationName)
+          //   });
+          //   console.log(listItems);
+          //   $("#inputState").html(listItems);
+          // });
+        </script>
+      </body>
+      </html>
